@@ -32,8 +32,11 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
     var showMatch by remember { mutableStateOf(false) }
     var matchedProfile by remember { mutableStateOf<Profile?>(null) }
 
+    var dragX by remember { mutableStateOf(0f) }
+    var dragY by remember { mutableStateOf(0f) }
+
     Box(
-        modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)), // Back to dark background
+        modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -86,6 +89,10 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                         matchedProfile = swiped
                                         showMatch = true
                                     }
+                                },
+                                onDragging = { x, y ->
+                                    dragX = x
+                                    dragY = y
                                 }
                             )
                         }
@@ -98,15 +105,21 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 modifier = Modifier.padding(bottom = 50.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                lastAction?.let {
-                    Text(
-                        text = it,
-                        color = Color.White.copy(alpha = 0.5f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier.height(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    lastAction?.let {
+                        Text(
+                            text = it,
+                            color = Color.White.copy(alpha = 0.5f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -121,7 +134,8 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                 lastAction = "Nope"
                                 cards = cards.drop(1)
                             }
-                        }
+                        },
+                        externalPressed = dragX < -150f
                     )
                     ActionButton3D(
                         icon = Icons.Default.Star,
@@ -132,7 +146,8 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                 lastAction = "Super Liked"
                                 cards = cards.drop(1)
                             }
-                        }
+                        },
+                        externalPressed = dragY < -150f
                     )
                     ActionButton3D(
                         icon = Icons.Default.Favorite,
@@ -148,7 +163,8 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                     showMatch = true
                                 }
                             }
-                        }
+                        },
+                        externalPressed = dragX > 150f
                     )
                 }
             }

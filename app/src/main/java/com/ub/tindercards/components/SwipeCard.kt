@@ -39,7 +39,8 @@ private const val SWIPE_THRESHOLD = 150f
 fun SwipeCard(
     profile: Profile,
     indexFromTop: Int,
-    onSwipe: (SwipeDirection) -> Unit
+    onSwipe: (SwipeDirection) -> Unit,
+    onDragging: (Float, Float) -> Unit = { _, _ -> }
 ) {
     val isTop = indexFromTop == 0
     val offsetX = remember { Animatable(0f) }
@@ -64,7 +65,7 @@ fun SwipeCard(
                 scaleX = 1f
                 scaleY = 1f
                 translationY = 0f
-                alpha = if (indexFromTop <= 1) 1f else 0f // Only top 2 cards should be visible to prevent "2 instances" bug
+                alpha = if (indexFromTop <= 1) 1f else 0f
                 cameraDistance = 15f * density
                 rotationX = if (isTop) offsetY.value / 100f else 0f
             }
@@ -74,6 +75,7 @@ fun SwipeCard(
                         detectDragGestures(
                             onDragEnd = {
                                 scope.launch {
+                                    onDragging(0f, 0f)
                                     when {
                                         offsetX.value > SWIPE_THRESHOLD -> {
                                             offsetX.animateTo(swipeOutDistance, tween(300))
@@ -96,6 +98,7 @@ fun SwipeCard(
                             },
                             onDragCancel = {
                                 scope.launch {
+                                    onDragging(0f, 0f)
                                     launch { offsetX.animateTo(0f, spring()) }
                                     launch { offsetY.animateTo(0f, spring()) }
                                 }
@@ -103,8 +106,11 @@ fun SwipeCard(
                             onDrag = { change, dragAmount ->
                                 change.consume()
                                 scope.launch {
-                                    offsetX.snapTo(offsetX.value + dragAmount.x)
-                                    offsetY.snapTo(offsetY.value + dragAmount.y)
+                                    val newX = offsetX.value + dragAmount.x
+                                    val newY = offsetY.value + dragAmount.y
+                                    offsetX.snapTo(newX)
+                                    offsetY.snapTo(newY)
+                                    onDragging(newX, newY)
                                 }
                             }
                         )
