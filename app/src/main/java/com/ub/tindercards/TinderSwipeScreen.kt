@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ub.tindercards.components.*
@@ -32,32 +33,53 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
     var matchedProfile by remember { mutableStateOf<Profile?>(null) }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)),
+        modifier = Modifier.fillMaxSize().background(Color(0xFFF1F1F1)), // Brighter background like Tinder
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Top Bar
             Box(
                 modifier = Modifier
-                    .width(340.dp)
-                    .height(480.dp),
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, bottom = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Tinder",
+                    color = Color(0xFFFE3C72),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            // Card Stack
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 20.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (cards.isEmpty()) {
                     EmptyState { cards = profiles; lastAction = null }
                 } else {
                     cards.take(3).reversed().forEachIndexed { index, profile ->
-                        val isTop = index == cards.take(3).size - 1
+                        val cardsInView = cards.take(3).size
+                        val indexFromTop = cardsInView - 1 - index
                         key(profile.id) {
                             SwipeCard(
                                 profile = profile,
-                                isTop = isTop,
-                                behindScale = if (!isTop) 0.95f else 1f,
+                                indexFromTop = indexFromTop,
                                 onSwipe = { dir ->
                                     val swiped = cards.first()
                                     lastAction = when (dir) {
-                                        SwipeDirection.RIGHT -> "💚 Liked"
-                                        SwipeDirection.LEFT -> "❌ Nope"
-                                        SwipeDirection.UP -> "⭐ Super Liked"
+                                        SwipeDirection.RIGHT -> "Liked"
+                                        SwipeDirection.LEFT -> "Nope"
+                                        SwipeDirection.UP -> "Super Liked"
                                     }
                                     cards = cards.drop(1)
                                     if (dir == SwipeDirection.RIGHT && (0..1).random() == 1) {
@@ -71,63 +93,64 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            lastAction?.let {
-                Text(
-                    text = it,
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // Bottom Actions
+            Column(
+                modifier = Modifier.padding(bottom = 50.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ActionButton3D(
-                    icon = Icons.Default.Close,
-                    color = Color(0xFFEF4444),
-                    size = 64.dp,
-                    onClick = {
-                        if (cards.isNotEmpty()) {
-                            lastAction = "❌ Nope"
-                            cards = cards.drop(1)
-                        }
-                    }
-                )
-                ActionButton3D(
-                    icon = Icons.Default.Star,
-                    color = Color(0xFF3B82F6),
-                    size = 48.dp,
-                    onClick = {
-                        if (cards.isNotEmpty()) {
-                            lastAction = "⭐ Super Liked"
-                            cards = cards.drop(1)
-                        }
-                    }
-                )
-                ActionButton3D(
-                    icon = Icons.Default.Favorite,
-                    color = Color(0xFF22C55E),
-                    size = 64.dp,
-                    onClick = {
-                        if (cards.isNotEmpty()) {
-                            val swiped = cards.first()
-                            lastAction = "💚 Liked"
-                            cards = cards.drop(1)
-                            if ((0..1).random() == 1) {
-                                matchedProfile = swiped
-                                showMatch = true
+                lastAction?.let {
+                    Text(
+                        text = it,
+                        color = Color.Black.copy(alpha = 0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ActionButton3D(
+                        icon = Icons.Default.Close,
+                        color = Color(0xFFF27121),
+                        size = 64.dp,
+                        onClick = {
+                            if (cards.isNotEmpty()) {
+                                lastAction = "Nope"
+                                cards = cards.drop(1)
                             }
                         }
-                    }
-                )
+                    )
+                    ActionButton3D(
+                        icon = Icons.Default.Star,
+                        color = Color(0xFF29ABE2),
+                        size = 52.dp,
+                        onClick = {
+                            if (cards.isNotEmpty()) {
+                                lastAction = "Super Liked"
+                                cards = cards.drop(1)
+                            }
+                        }
+                    )
+                    ActionButton3D(
+                        icon = Icons.Default.Favorite,
+                        color = Color(0xFF19FB9B),
+                        size = 64.dp,
+                        onClick = {
+                            if (cards.isNotEmpty()) {
+                                val swiped = cards.first()
+                                lastAction = "Liked"
+                                cards = cards.drop(1)
+                                if ((0..1).random() == 1) {
+                                    matchedProfile = swiped
+                                    showMatch = true
+                                }
+                            }
+                        }
+                    )
+                }
             }
         }
 

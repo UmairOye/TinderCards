@@ -2,6 +2,7 @@ package com.ub.tindercards.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -38,10 +39,10 @@ private const val SWIPE_THRESHOLD = 300f
 @Composable
 fun SwipeCard(
     profile: Profile,
-    isTop: Boolean,
-    behindScale: Float,
+    indexFromTop: Int,
     onSwipe: (SwipeDirection) -> Unit
 ) {
+    val isTop = indexFromTop == 0
     val offsetX = remember { Animatable(0f) }
     val offsetY = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
@@ -54,10 +55,16 @@ fun SwipeCard(
     val likeAlpha by remember { derivedStateOf { (offsetX.value / SWIPE_THRESHOLD).coerceIn(0f, 1f) } }
     val nopeAlpha by remember { derivedStateOf { (-offsetX.value / SWIPE_THRESHOLD).coerceIn(0f, 1f) } }
     val superAlpha by remember { derivedStateOf { (-offsetY.value / SWIPE_THRESHOLD).coerceIn(0f, 1f) } }
-    val cardScale by animateFloatAsState(
-        targetValue = behindScale,
+
+    val animatedScale by animateFloatAsState(
+        targetValue = 1f - (indexFromTop * 0.04f),
         animationSpec = spring(stiffness = Spring.StiffnessLow),
-        label = "scale"
+        label = "stackScale"
+    )
+    val animatedYOffset by animateDpAsState(
+        targetValue = (indexFromTop * 12).dp,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "stackY"
     )
 
     Box(
@@ -66,19 +73,20 @@ fun SwipeCard(
             .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
             .graphicsLayer {
                 rotationZ = rotation
-                scaleX = if (isTop) {
-                    val drag = abs(offsetX.value) / 600f
-                    (1f - drag * 0.05f).coerceIn(0.95f, 1f)
-                } else cardScale
+                val dragScale = if (isTop) {
+                    val drag = abs(offsetX.value) / 800f
+                    (1f - drag * 0.03f).coerceIn(0.97f, 1f)
+                } else 1f
+                scaleX = animatedScale * dragScale
                 scaleY = scaleX
-                translationY = if (!isTop) 10f else 0f
-                alpha = if (!isTop) 0.7f else 1f
-                cameraDistance = 12f * density
-                rotationX = if (isTop) offsetY.value / 80f else 0f
+                translationY = animatedYOffset.toPx()
+                alpha = (1f - (indexFromTop * 0.15f)).coerceIn(0f, 1f)
+                cameraDistance = 15f * density
+                rotationX = if (isTop) offsetY.value / 100f else 0f
             }
             .then(
                 if (isTop) {
-                    Modifier.pointerInput(profile.id) {
+                    Modifier.pointerInput(profile.id, isTop) {
                         detectDragGestures(
                             onDragEnd = {
                                 scope.launch {
@@ -96,8 +104,8 @@ fun SwipeCard(
                                             onSwipe(SwipeDirection.UP)
                                         }
                                         else -> {
-                                            launch { offsetX.animateTo(0f, spring(dampingRatio = 0.6f, stiffness = 300f)) }
-                                            launch { offsetY.animateTo(0f, spring(dampingRatio = 0.6f, stiffness = 300f)) }
+                                            launch { offsetX.animateTo(0f, spring(dampingRatio = 0.65f, stiffness = 400f)) }
+                                            launch { offsetY.animateTo(0f, spring(dampingRatio = 0.65f, stiffness = 400f)) }
                                         }
                                     }
                                 }
@@ -119,7 +127,8 @@ fun SwipeCard(
                     }
                 } else Modifier
             )
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
     ) {
         Image(
             painter = painterResource(profile.imageRes),
@@ -133,9 +142,12 @@ fun SwipeCard(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f), Color.Black.copy(alpha = 0.8f)),
-                        startY = 0f,
-                        endY = Float.POSITIVE_INFINITY
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.1f),
+                            Color.Black.copy(alpha = 0.85f)
+                        ),
+                        startY = 300f
                     )
                 )
         )
@@ -146,7 +158,7 @@ fun SwipeCard(
                 color = Color(0xFF4ADE80),
                 alpha = likeAlpha,
                 rotation = -15f,
-                modifier = Modifier.align(Alignment.TopStart).padding(start = 24.dp, top = 32.dp)
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 24.dp, top = 40.dp)
             )
         }
 
@@ -156,7 +168,7 @@ fun SwipeCard(
                 color = Color(0xFFF87171),
                 alpha = nopeAlpha,
                 rotation = 15f,
-                modifier = Modifier.align(Alignment.TopEnd).padding(end = 24.dp, top = 32.dp)
+                modifier = Modifier.align(Alignment.TopEnd).padding(end = 24.dp, top = 40.dp)
             )
         }
 
@@ -173,30 +185,36 @@ fun SwipeCard(
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(20.dp)
+                .padding(24.dp)
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(profile.name, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(profile.name, color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(8.dp))
-                Text("${profile.age}", color = Color.White.copy(alpha = 0.8f), fontSize = 22.sp, fontWeight = FontWeight.Light)
+                Text("${profile.age}", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Light)
             }
             Spacer(Modifier.height(4.dp))
-            Text(profile.job, color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp)
+            Text(profile.job, color = Color.White.copy(alpha = 0.9f), fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(2.dp))
-            Text(profile.distance, color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(profile.bio, color = Color.White.copy(alpha = 0.6f), fontSize = 13.sp)
+            Text(profile.distance, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
             Spacer(Modifier.height(8.dp))
+            Text(
+                profile.bio,
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                maxLines = 2
+            )
+            Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                profile.tags.forEach { tag ->
+                profile.tags.take(3).forEach { tag ->
                     Text(
                         text = tag,
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
                         modifier = Modifier
-                            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                            .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     )
                 }
             }

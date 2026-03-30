@@ -5,6 +5,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -29,13 +30,13 @@ fun ActionButton3D(
 ) {
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.75f else 1f,
+        targetValue = if (pressed) 0.85f else 1f,
         animationSpec = spring(dampingRatio = 0.4f, stiffness = 500f),
         label = "btnScale",
         finishedListener = { pressed = false }
     )
     val elevation by animateFloatAsState(
-        targetValue = if (pressed) 2f else 8f,
+        targetValue = if (pressed) 2f else 6f,
         animationSpec = spring(stiffness = 400f),
         label = "btnElev"
     )
@@ -47,13 +48,10 @@ fun ActionButton3D(
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-                this.shadowElevation = elevation
-                rotationX = if (pressed) 15f else 0f
-                rotationY = if (pressed) -10f else 0f
-                cameraDistance = 12f * density
+                this.shadowElevation = elevation.dp.toPx()
             }
             .shadow(elevation.dp, CircleShape)
-            .background(Color(0xFF1A1A2E), CircleShape)
+            .background(Color.White, CircleShape)
             .clip(CircleShape)
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -65,21 +63,11 @@ fun ActionButton3D(
                 )
             }
     ) {
-        Box(
-            modifier = Modifier
-                .size(size)
-                .background(Color.Transparent, CircleShape)
-                .then(
-                    Modifier.graphicsLayer {
-                        this.alpha = if (pressed) 0.5f else 0f
-                    }
-                )
-        )
         Icon(
             imageVector = icon,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(size * 0.42f)
+            modifier = Modifier.size(size * 0.5f)
         )
     }
 }
