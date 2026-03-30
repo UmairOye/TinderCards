@@ -2,7 +2,6 @@ package com.ub.tindercards.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -34,7 +33,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private const val SWIPE_THRESHOLD = 300f
+private const val SWIPE_THRESHOLD = 150f
 
 @Composable
 fun SwipeCard(
@@ -56,31 +55,16 @@ fun SwipeCard(
     val nopeAlpha by remember { derivedStateOf { (-offsetX.value / SWIPE_THRESHOLD).coerceIn(0f, 1f) } }
     val superAlpha by remember { derivedStateOf { (-offsetY.value / SWIPE_THRESHOLD).coerceIn(0f, 1f) } }
 
-    val animatedScale by animateFloatAsState(
-        targetValue = 1f - (indexFromTop * 0.04f),
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
-        label = "stackScale"
-    )
-    val animatedYOffset by animateDpAsState(
-        targetValue = (indexFromTop * 12).dp,
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
-        label = "stackY"
-    )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
             .graphicsLayer {
                 rotationZ = rotation
-                val dragScale = if (isTop) {
-                    val drag = abs(offsetX.value) / 800f
-                    (1f - drag * 0.03f).coerceIn(0.97f, 1f)
-                } else 1f
-                scaleX = animatedScale * dragScale
-                scaleY = scaleX
-                translationY = animatedYOffset.toPx()
-                alpha = (1f - (indexFromTop * 0.15f)).coerceIn(0f, 1f)
+                scaleX = 1f
+                scaleY = 1f
+                translationY = 0f
+                alpha = if (indexFromTop <= 1) 1f else 0f // Only top 2 cards should be visible to prevent "2 instances" bug
                 cameraDistance = 15f * density
                 rotationX = if (isTop) offsetY.value / 100f else 0f
             }
@@ -127,8 +111,7 @@ fun SwipeCard(
                     }
                 } else Modifier
             )
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .clip(RoundedCornerShape(12.dp))
     ) {
         Image(
             painter = painterResource(profile.imageRes),

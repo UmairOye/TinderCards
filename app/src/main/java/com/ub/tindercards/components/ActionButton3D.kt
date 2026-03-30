@@ -30,13 +30,13 @@ fun ActionButton3D(
 ) {
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.85f else 1f,
+        targetValue = if (pressed) 0.8f else 1f,
         animationSpec = spring(dampingRatio = 0.4f, stiffness = 500f),
         label = "btnScale",
         finishedListener = { pressed = false }
     )
     val elevation by animateFloatAsState(
-        targetValue = if (pressed) 2f else 6f,
+        targetValue = if (pressed) 2f else 8f,
         animationSpec = spring(stiffness = 400f),
         label = "btnElev"
     )
@@ -51,7 +51,7 @@ fun ActionButton3D(
                 this.shadowElevation = elevation.dp.toPx()
             }
             .shadow(elevation.dp, CircleShape)
-            .background(Color.White, CircleShape)
+            .background(Color(0xFF1A1A2E).copy(alpha = 0.8f), CircleShape) // Back to a dark, semi-transparent background
             .clip(CircleShape)
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -67,7 +67,7 @@ fun ActionButton3D(
             imageVector = icon,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(size * 0.5f)
+            modifier = Modifier.size(size * 0.45f)
         )
     }
 }

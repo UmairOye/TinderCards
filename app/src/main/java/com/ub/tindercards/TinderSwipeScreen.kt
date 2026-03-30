@@ -33,7 +33,7 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
     var matchedProfile by remember { mutableStateOf<Profile?>(null) }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFF1F1F1)), // Brighter background like Tinder
+        modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)), // Back to dark background
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -61,7 +61,7 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (cards.isEmpty()) {
@@ -101,7 +101,7 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 lastAction?.let {
                     Text(
                         text = it,
-                        color = Color.Black.copy(alpha = 0.5f),
+                        color = Color.White.copy(alpha = 0.5f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -109,7 +109,7 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 }
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ActionButton3D(
