@@ -33,7 +33,7 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
     var matchedProfile by remember { mutableStateOf<Profile?>(null) }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)), // Back to dark background
+        modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -98,15 +98,22 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 modifier = Modifier.padding(bottom = 50.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                lastAction?.let {
-                    Text(
-                        text = it,
-                        color = Color.White.copy(alpha = 0.5f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                // Fixed height container for action text to prevent layout shift
+                Box(
+                    modifier = Modifier.height(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    lastAction?.let {
+                        Text(
+                            text = it,
+                            color = Color.White.copy(alpha = 0.5f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
