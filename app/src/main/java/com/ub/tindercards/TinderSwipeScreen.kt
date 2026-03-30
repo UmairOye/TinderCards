@@ -32,6 +32,9 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
     var showMatch by remember { mutableStateOf(false) }
     var matchedProfile by remember { mutableStateOf<Profile?>(null) }
 
+    var dragX by remember { mutableStateOf(0f) }
+    var dragY by remember { mutableStateOf(0f) }
+
     Box(
         modifier = Modifier.fillMaxSize().background(Color(0xFF0A0A0F)),
         contentAlignment = Alignment.Center
@@ -86,6 +89,10 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                         matchedProfile = swiped
                                         showMatch = true
                                     }
+                                },
+                                onDragging = { x, y ->
+                                    dragX = x
+                                    dragY = y
                                 }
                             )
                         }
@@ -98,7 +105,6 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                 modifier = Modifier.padding(bottom = 50.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Fixed height container for action text to prevent layout shift
                 Box(
                     modifier = Modifier.height(32.dp),
                     contentAlignment = Alignment.Center
@@ -128,7 +134,8 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                 lastAction = "Nope"
                                 cards = cards.drop(1)
                             }
-                        }
+                        },
+                        externalPressed = dragX < -150f
                     )
                     ActionButton3D(
                         icon = Icons.Default.Star,
@@ -139,7 +146,8 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                 lastAction = "Super Liked"
                                 cards = cards.drop(1)
                             }
-                        }
+                        },
+                        externalPressed = dragY < -150f
                     )
                     ActionButton3D(
                         icon = Icons.Default.Favorite,
@@ -155,7 +163,8 @@ fun TinderSwipeScreen(profiles: List<Profile>) {
                                     showMatch = true
                                 }
                             }
-                        }
+                        },
+                        externalPressed = dragX > 150f
                     )
                 }
             }
